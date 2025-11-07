@@ -1,5 +1,5 @@
 /* Entry point: önce DB'yi başlat, sonra sunucuyu ayağa kaldır */
-require('dotenv').config({ path: __dirname + '/../.env' });
+require('dotenv').config();
 const initMongoConnection = require('./db/initMongoConnection');
 const setupServer = require('./server');
 
