@@ -1,3 +1,6 @@
+import express from 'express';
+import contactsRouter from './routes/contactsRoutes.js';
+
 const express = require('express');
 const cors = require('cors');
 const pino = require('pino');
@@ -13,6 +16,7 @@ const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
  * ve PORT'a bağlanarak sunucuyu başlatır.
  */
 function setupServer() {
+  
   const app = express();
 
   // Middleware
@@ -42,6 +46,7 @@ function setupServer() {
   });
 
   return app;
+
 }
 
 module.exports = setupServer;

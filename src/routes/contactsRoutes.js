@@ -1,11 +1,5 @@
-import express from "express";
-import {
-  getAllContacts,
-  getContactById,
-  createContact,
-  updateContact,
-  deleteContact,
-} from "../controllers/contactsController.js";
+import { Router } from 'express';
+import { getAllContacts, getContactById } from '../controllers/contactsController.js';
 import ctrlWrapper from "../utils/ctrlWrapper.js";
 import { validateBody } from "../middlewares/validateBody.js";
 import { isValidId } from "../middlewares/isValidId.js";
@@ -14,7 +8,7 @@ import {
   updateContactSchema,
 } from "../schemas/contactsSchemas.js";
 
-const router = express.Router();
+const router = Router();
 
 router.get("/", ctrlWrapper(getAllContacts));
 router.get("/:contactId", isValidId, ctrlWrapper(getContactById));
