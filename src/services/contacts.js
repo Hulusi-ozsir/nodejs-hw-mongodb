@@ -1,26 +1,29 @@
-const Contact = require('../db/Contact');
+import Contact from "../models/contact.js";
 
-const getAllContacts = async () => Contact.find().lean();
+export const getAllContacts = async ({
+  page = 1,
+  perPage = 10,
+  sortBy = "name",
+  sortOrder = "asc",
+  filters = {},
+}) => {
+  const skip = (page - 1) * perPage;
+  const sortOptions = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
 
-const getContactById = async (contactId) => Contact.findById(contactId).lean();
+  const data = await Contact.find(filters)
+    .sort(sortOptions)
+    .skip(skip)
+    .limit(Number(perPage));
 
-const createContact = async (data) => Contact.create(data);
-
-const updateContact = async (contactId, updateData) => {
-  return Contact.findByIdAndUpdate(contactId, updateData, { new: true });
+  const totalItems = await Contact.countDocuments(filters);
+  return { data, totalItems };
 };
 
-const deleteContact = async (contactId) => {
-  const contact = await Contact.findById(contactId);
-  if (!contact) return null;
-  await Contact.deleteOne({ _id: contactId });
-  return true;
-};
+export const getContactById = (id) => Contact.findById(id);
 
-module.exports = {
-  getAllContacts,
-  getContactById,
-  createContact,
-  updateContact,
-  deleteContact
-};
+export const createContact = (body) => Contact.create(body);
+
+export const updateContact = (id, body) =>
+  Contact.findByIdAndUpdate(id, body, { new: true });
+
+export const deleteContact = (id) => Contact.findByIdAndDelete(id);
