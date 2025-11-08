@@ -1,13 +1,14 @@
 import express from 'express';
 import contactsRouter from './routes/contactsRoutes.js';
 
-const express = require('express');
-const cors = require('cors');
-const pino = require('pino');
-const pinoHttp = require('pino-http');
-const contactsRoutes = require('./routes/contactsRoutes');
-const errorHandler = require('./middlewares/errorHandler');
-const notFoundHandler = require('./middlewares/notFoundHandler');
+
+const express = import('express');
+const cors = import('cors');
+const pino = import('pino');
+const pinoHttp = import('pino-http');
+const contactsRoutes = import('./routes/contactsRoutes');
+const errorHandler = import('./middlewares/errorHandler');
+const notFoundHandler = import('./middlewares/notFoundHandler');
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
@@ -16,7 +17,7 @@ const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
  * ve PORT'a bağlanarak sunucuyu başlatır.
  */
 function setupServer() {
-  
+
   const app = express();
 
   // Middleware
@@ -49,4 +50,4 @@ function setupServer() {
 
 }
 
-module.exports = setupServer;
+export default setupServer;
