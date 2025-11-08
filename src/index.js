@@ -1,7 +1,6 @@
-/* Entry point: önce DB'yi başlat, sonra sunucuyu ayağa kaldır */
-require('dotenv').config();
-const initMongoConnection = require('./db/initMongoConnection');
-const setupServer = require('./server');
+import 'dotenv/config'; // dotenv'i direkt import et
+import initMongoConnection from './db/initMongoConnection.js';
+import setupServer from './server.js';
 
 (async () => {
   try {
