@@ -2,10 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
-
-import contactsRouter from './routes/contactsRoutes.js';
-import errorHandler from './middlewares/errorHandler.js';
-import notFoundHandler from './middlewares/notFoundHandler.js';
+import contactsRoutes from './routes/contactsRoutes.js';
+import { errorHandler } from './middlewares/errorHandler.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
@@ -18,14 +17,15 @@ export default function setupServer() {
   app.use(pinoHttp({ logger }));
 
   // Routes
-  app.use('/contacts', contactsRouter);
+  app.use('/contacts', contactsRoutes);
 
-  // Unknown route -> 404 JSON
-  app.use((req, res) => res.status(404).json({ message: 'Not found' }));
-
+  // 404 handler
   app.use(notFoundHandler);
+
+  // Error handler
   app.use(errorHandler);
 
+  // Start server
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
