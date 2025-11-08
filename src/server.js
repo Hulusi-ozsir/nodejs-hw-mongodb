@@ -1,18 +1,15 @@
-const express = require('express');
-const cors = require('cors');
-const pino = require('pino');
-const pinoHttp = require('pino-http');
-const contactsRoutes = require('./routes/contactsRoutes');
-const errorHandler = require('./middlewares/errorHandler');
-const notFoundHandler = require('./middlewares/notFoundHandler');
+import express from 'express';
+import cors from 'cors';
+import pino from 'pino';
+import pinoHttp from 'pino-http';
+
+import contactsRouter from './routes/contactsRoutes.js';
+import errorHandler from './middlewares/errorHandler.js';
+import notFoundHandler from './middlewares/notFoundHandler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
-/**
- * setupServer: express uygulamasını kurar, middleware ve rotaları register eder,
- * ve PORT'a bağlanarak sunucuyu başlatır.
- */
-function setupServer() {
+export default function setupServer() {
   const app = express();
 
   // Middleware
@@ -21,27 +18,19 @@ function setupServer() {
   app.use(pinoHttp({ logger }));
 
   // Routes
-  // tüm contacts endpointleri /contacts altında olacak
-  app.use('/contacts', contactsRoutes);
+  app.use('/contacts', contactsRouter);
 
-  // Bilinmeyen rota -> 404 JSON
-  app.use((req, res) => {
-    res.status(404).json({ message: 'Not found' });
-  });
+  // Unknown route -> 404 JSON
+  app.use((req, res) => res.status(404).json({ message: 'Not found' }));
 
   app.use(notFoundHandler);
   app.use(errorHandler);
 
-  // Start server
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
-    // console.log yerine pino logger ile yazıyoruz (ama console kabul ediliyorsa).
-    // eslint-disable-next-line no-console
     console.log(`Server is running on port ${PORT}`);
   });
 
   return app;
 }
-
-module.exports = setupServer;
