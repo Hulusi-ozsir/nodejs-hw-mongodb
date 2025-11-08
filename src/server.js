@@ -3,13 +3,13 @@ import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
 
-import contactsRoutes from './routes/contactsRoutes.js';
+import contactsRouter from './routes/contactsRoutes.js';
 import errorHandler from './middlewares/errorHandler.js';
 import notFoundHandler from './middlewares/notFoundHandler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
-function setupServer() {
+export default function setupServer() {
   const app = express();
 
   // Middleware
@@ -18,18 +18,19 @@ function setupServer() {
   app.use(pinoHttp({ logger }));
 
   // Routes
-  app.use('/contacts', contactsRoutes);
+  app.use('/contacts', contactsRouter);
 
-  // Bilinmeyen rota -> 404 JSON
+  // Unknown route -> 404 JSON
+  app.use((req, res) => res.status(404).json({ message: 'Not found' }));
+
   app.use(notFoundHandler);
   app.use(errorHandler);
 
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
   });
 
   return app;
 }
-
-export default setupServer;
