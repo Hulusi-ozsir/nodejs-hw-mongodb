@@ -3,6 +3,8 @@ const cors = require('cors');
 const pino = require('pino');
 const pinoHttp = require('pino-http');
 const contactsRoutes = require('./routes/contactsRoutes');
+const errorHandler = require('./middlewares/errorHandler');
+const notFoundHandler = require('./middlewares/notFoundHandler');
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
@@ -26,6 +28,9 @@ function setupServer() {
   app.use((req, res) => {
     res.status(404).json({ message: 'Not found' });
   });
+
+  app.use(notFoundHandler);
+  app.use(errorHandler);
 
   // Start server
   const PORT = process.env.PORT || 3000;

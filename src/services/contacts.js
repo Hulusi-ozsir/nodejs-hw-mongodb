@@ -1,23 +1,26 @@
 const Contact = require('../db/Contact');
 
-/**
- * getAllContacts: tüm kayıtları döndürür
- * @returns {Promise<Array>}
- */
-const getAllContacts = async () => {
-  return Contact.find().lean();
+const getAllContacts = async () => Contact.find().lean();
+
+const getContactById = async (contactId) => Contact.findById(contactId).lean();
+
+const createContact = async (data) => Contact.create(data);
+
+const updateContact = async (contactId, updateData) => {
+  return Contact.findByIdAndUpdate(contactId, updateData, { new: true });
 };
 
-/**
- * getContactById: id ile tek contact döndürür
- * @param {String} contactId
- * @returns {Promise<Object|null>}
- */
-const getContactById = async (contactId) => {
-  return Contact.findById(contactId).lean();
+const deleteContact = async (contactId) => {
+  const contact = await Contact.findById(contactId);
+  if (!contact) return null;
+  await Contact.deleteOne({ _id: contactId });
+  return true;
 };
 
 module.exports = {
   getAllContacts,
-  getContactById
+  getContactById,
+  createContact,
+  updateContact,
+  deleteContact
 };
