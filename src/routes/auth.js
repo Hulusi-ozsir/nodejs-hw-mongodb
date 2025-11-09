@@ -1,14 +1,11 @@
 import express from 'express';
-import { register, login, refresh, logout } from '../controllers/auth.js';
-import ctrlWrapper from '../utils/ctrlWrapper.js';
-import validateBody from '../middlewares/validateBody.js';
-import { registerSchema, loginSchema } from '../schemas/authSchemas.js';
+import { validateBody } from '../middlewares/validateBody.js';
+import { sendResetEmailController, resetPasswordController } from '../controllers/authController.js';
+import { sendResetEmailSchema, resetPasswordSchema } from '../schemas/authSchemas.js';
 
 const router = express.Router();
 
-router.post('/register', validateBody(registerSchema), ctrlWrapper(register));
-router.post('/login', validateBody(loginSchema), ctrlWrapper(login));
-router.post('/refresh', ctrlWrapper(refresh)); // uses cookie
-router.post('/logout', ctrlWrapper(logout));
+router.post('/send-reset-email', validateBody(sendResetEmailSchema), sendResetEmailController);
+router.post('/reset-pwd', validateBody(resetPasswordSchema), resetPasswordController);
 
-export default router;
+export default router;  // <-- default export eklendi

@@ -1,39 +1,22 @@
 import express from 'express';
-import cors from 'cors';
-import pino from 'pino';
-import pinoHttp from 'pino-http';
-import cookieParser from 'cookie-parser';
-
-import contactsRouter from './routes/contactsRoutes.js';
 import authRouter from './routes/auth.js';
-import { notFoundHandler } from './middlewares/notFoundHandler.js';
-import { errorHandler } from './middlewares/errorHandler.js';
+import contactsRouter from './routes/contactsRoutes.js';
 
-const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
+const app = express();
 
-export default function setupServer() {
-  const app = express();
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-  app.use(cors());
-  app.use(express.json());
-  app.use(cookieParser()); // cookie parsing
-  app.use(pinoHttp({ logger }));
+// Routers
+app.use('/auth', authRouter);
+app.use('/contacts', contactsRouter);
 
-  // auth routes (no auth required)
-  app.use('/auth', authRouter);
+// Hata middleware
+app.use((err, req, res, next) => {
+  const status = err.status || 500;
+  const message = err.message || 'Internal Server Error';
+  res.status(status).json({ status, message });
+});
 
-  // contacts routes (authenticate inside router)
-  app.use('/contacts', contactsRouter);
-
-  app.use(notFoundHandler);
-  app.use(errorHandler);
-
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    logger.info(`Server is running on port ${PORT}`);
-    // eslint-disable-next-line no-console
-    console.log(`Server is running on port ${PORT}`);
-  });
-
-  return app;
-}
+export default app;
