@@ -1,9 +1,10 @@
-const express = require('express');
+import express from 'express';
+import parser from '../middlewares/upload.js';
+import { createContact, updateContact } from '../controllers/contactsController.js';
+
 const router = express.Router();
-const parser = require('../middlewares/upload');
-const contactsController = require('../controllers/contactsController');
 
-router.post('/contacts', parser.single('photo'), contactsController.createContact);
-router.patch('/contacts/:contactId', parser.single('photo'), contactsController.updateContact);
+router.post('/contacts', parser.single('photo'), createContact);
+router.patch('/contacts/:contactId', parser.single('photo'), updateContact);
 
-module.exports = router;
+export default router;  // <-- default export eklendi

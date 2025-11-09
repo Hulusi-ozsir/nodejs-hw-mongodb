@@ -1,10 +1,11 @@
-const express = require('express');
+import express from 'express';
+import { validateBody } from '../middlewares/validateBody.js';
+import { sendResetEmailController, resetPasswordController } from '../controllers/authController.js';
+import { sendResetEmailSchema, resetPasswordSchema } from '../schemas/authSchemas.js';
+
 const router = express.Router();
-const { validateBody } = require('../middlewares/validateBody');
-const { sendResetEmailController, resetPasswordController } = require('../controllers/authController');
-const { sendResetEmailSchema, resetPasswordSchema } = require('../schemas/authSchemas');
 
 router.post('/send-reset-email', validateBody(sendResetEmailSchema), sendResetEmailController);
 router.post('/reset-pwd', validateBody(resetPasswordSchema), resetPasswordController);
 
-module.exports = router;
+export default router;  // <-- default export eklendi

@@ -1,9 +1,9 @@
-const createHttpError = require('http-errors');
-const jwt = require('jsonwebtoken');
-const nodemailer = require('nodemailer');
-const User = require('../models/user'); // Kullanıcı modeli
+import createHttpError from 'http-errors';
+import jwt from 'jsonwebtoken';
+import nodemailer from 'nodemailer';
+import User from '../models/user.js'; // Kullanıcı modelinizin yolu
 
-const sendResetEmailController = async (req, res, next) => {
+export const sendResetEmailController = async (req, res, next) => {
   try {
     const { email } = req.body;
     const user = await User.findOne({ email });
@@ -34,29 +34,21 @@ const sendResetEmailController = async (req, res, next) => {
       message: 'Reset password email has been successfully sent.',
       data: {}
     });
-
   } catch (err) {
-    if (err.responseCode === 'EENVELOPE') {
-      return next(createHttpError(500, 'Failed to send the email, please try again later.'));
-    }
-    next(err);
+    next(createHttpError(500, 'Failed to send the email, please try again later.'));
   }
 };
 
-const resetPasswordController = async (req, res, next) => {
+export const resetPasswordController = async (req, res, next) => {
   try {
     const { token, password } = req.body;
-
     const payload = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findOne({ email: payload.email });
     if (!user) throw createHttpError(404, 'User not found!');
 
-    user.password = password; // hashleme varsa burada yapılmalı
+    user.password = password; // hashleme gerekiyorsa burada yapılmalı
     await user.save();
-
-    // Oturumu silme işlemi burada yapılabilir (örneğin token blacklist)
-    // await Session.deleteMany({ userId: user._id });
 
     res.status(200).json({
       status: 200,
