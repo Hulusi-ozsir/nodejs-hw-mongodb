@@ -1,14 +1,10 @@
-import express from 'express';
-import { register, login, refresh, logout } from '../controllers/auth.js';
-import ctrlWrapper from '../utils/ctrlWrapper.js';
-import validateBody from '../middlewares/validateBody.js';
-import { registerSchema, loginSchema } from '../schemas/authSchemas.js';
-
+const express = require('express');
 const router = express.Router();
+const { validateBody } = require('../middlewares/validateBody');
+const { sendResetEmailController, resetPasswordController } = require('../controllers/authController');
+const { sendResetEmailSchema, resetPasswordSchema } = require('../schemas/authSchemas');
 
-router.post('/register', validateBody(registerSchema), ctrlWrapper(register));
-router.post('/login', validateBody(loginSchema), ctrlWrapper(login));
-router.post('/refresh', ctrlWrapper(refresh)); // uses cookie
-router.post('/logout', ctrlWrapper(logout));
+router.post('/send-reset-email', validateBody(sendResetEmailSchema), sendResetEmailController);
+router.post('/reset-pwd', validateBody(resetPasswordSchema), resetPasswordController);
 
-export default router;
+module.exports = router;

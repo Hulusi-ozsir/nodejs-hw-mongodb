@@ -1,68 +1,72 @@
-import createError from 'http-errors';
-import * as authService from '../services/auth.js';
+const createHttpError = require('http-errors');
+const jwt = require('jsonwebtoken');
+const nodemailer = require('nodemailer');
+const User = require('../models/user'); // Kullanıcı modeli
 
-const cookieOptions = () => ({
-  httpOnly: process.env.COOKIE_HTTP_ONLY === 'true' || true,
-  secure: process.env.COOKIE_SECURE === 'true' || false,
-  sameSite: process.env.COOKIE_SAME_SITE || 'lax',
-  maxAge: Number(process.env.REFRESH_TOKEN_EXPIRES_DAYS || 30) * 24 * 60 * 60 * 1000
-});
+const sendResetEmailController = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) throw createHttpError(404, 'User not found!');
 
-/**
- * POST /auth/register
- */
-export const register = async (req, res, next) => {
-  const { name, email, password } = req.body;
-  const user = await authService.registerUser({ name, email, password });
-  return res.status(201).json({
-    status: 201,
-    message: 'Successfully registered a user!',
-    data: user
-  });
+    const token = jwt.sign({ email }, process.env.JWT_SECRET, { expiresIn: '5m' });
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: process.env.SMTP_PORT,
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASSWORD
+      }
+    });
+
+    const resetUrl = `${process.env.APP_DOMAIN}/reset-password?token=${token}`;
+
+    await transporter.sendMail({
+      from: process.env.SMTP_FROM,
+      to: email,
+      subject: 'Reset Your Password',
+      html: `<p>Click <a href="${resetUrl}">here</a> to reset your password. This link will expire in 5 minutes.</p>`
+    });
+
+    res.status(200).json({
+      status: 200,
+      message: 'Reset password email has been successfully sent.',
+      data: {}
+    });
+
+  } catch (err) {
+    if (err.responseCode === 'EENVELOPE') {
+      return next(createHttpError(500, 'Failed to send the email, please try again later.'));
+    }
+    next(err);
+  }
 };
 
-/**
- * POST /auth/login
- */
-export const login = async (req, res, next) => {
-  const { email, password } = req.body;
-  const { accessToken, refreshToken } = await authService.loginUser({ email, password });
+const resetPasswordController = async (req, res, next) => {
+  try {
+    const { token, password } = req.body;
 
-  // Set refresh token in cookie
-  res.cookie('refreshToken', refreshToken, cookieOptions());
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
 
-  return res.status(200).json({
-    status: 200,
-    message: 'Successfully logged in an user!',
-    data: { accessToken }
-  });
-};
+    const user = await User.findOne({ email: payload.email });
+    if (!user) throw createHttpError(404, 'User not found!');
 
-/**
- * POST /auth/refresh
- */
-export const refresh = async (req, res, next) => {
-  const refreshToken = req.cookies?.refreshToken;
-  const { accessToken, refreshToken: newRefresh } = await authService.refreshSession(refreshToken);
+    user.password = password; // hashleme varsa burada yapılmalı
+    await user.save();
 
-  // set new cookie
-  res.cookie('refreshToken', newRefresh, cookieOptions());
+    // Oturumu silme işlemi burada yapılabilir (örneğin token blacklist)
+    // await Session.deleteMany({ userId: user._id });
 
-  return res.status(200).json({
-    status: 200,
-    message: 'Successfully refreshed a session!',
-    data: { accessToken }
-  });
-};
-
-/**
- * POST /auth/logout
- */
-export const logout = async (req, res, next) => {
-  const refreshToken = req.cookies?.refreshToken;
-  await authService.logoutSession(refreshToken);
-
-  // clear cookie
-  res.clearCookie('refreshToken', cookieOptions());
-  return res.status(204).send();
+    res.status(200).json({
+      status: 200,
+      message: 'Password has been successfully reset.',
+      data: {}
+    });
+  } catch (err) {
+    if (err.name === 'TokenExpiredError' || err.name === 'JsonWebTokenError') {
+      return next(createHttpError(401, 'Token is expired or invalid.'));
+    }
+    next(err);
+  }
 };
