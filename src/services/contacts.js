@@ -1,29 +1,34 @@
-import Contact from "../db/models/Contact.js";
+import Contact from '../db/models/Contact.js'; // bulunduğu konuma göre path'ı kontrol edin
 
-export const getAllContacts = async ({
-  page = 1,
-  perPage = 10,
-  sortBy = "name",
-  sortOrder = "asc",
-  filters = {},
-}) => {
-  const skip = (page - 1) * perPage;
-  const sortOptions = { [sortBy]: sortOrder === "asc" ? 1 : -1 };
+export const getAllContacts = async ({ page = 1, perPage = 10, sortBy = 'name', sortOrder = 'asc', filters = {}, userId }) => {
+  const skip = (Number(page) - 1) * Number(perPage);
+  const sortOptions = { [sortBy]: sortOrder === 'asc' ? 1 : -1 };
 
-  const data = await Contact.find(filters)
+  const query = { ...filters, userId };
+
+  const data = await Contact.find(query)
     .sort(sortOptions)
     .skip(skip)
-    .limit(Number(perPage));
+    .limit(Number(perPage))
+    .lean();
 
-  const totalItems = await Contact.countDocuments(filters);
+  const totalItems = await Contact.countDocuments(query);
   return { data, totalItems };
 };
 
-export const getContactById = (id) => Contact.findById(id);
+export const getContactById = async (contactId, userId) => {
+  return Contact.findOne({ _id: contactId, userId }).lean();
+};
 
-export const createContact = (body) => Contact.create(body);
+export const createContact = async (body) => {
+  return Contact.create(body);
+};
 
-export const updateContact = (id, body) =>
-  Contact.findByIdAndUpdate(id, body, { new: true });
+export const updateContact = async (contactId, userId, body) => {
+  return Contact.findOneAndUpdate({ _id: contactId, userId }, body, { new: true }).lean();
+};
 
-export const deleteContact = (id) => Contact.findByIdAndDelete(id);
+export const deleteContact = async (contactId, userId) => {
+  const doc = await Contact.findOneAndDelete({ _id: contactId, userId });
+  return !!doc;
+};

@@ -1,38 +1,12 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
-const {
-  MONGODB_USER,
-  MONGODB_PASSWORD,
-  MONGODB_URL,
-  MONGODB_DB
-} = process.env;
+export default async function initMongoConnection() {
+  const { MONGODB_URI } = process.env;
 
-/**
- * initMongoConnection: Mongoose ile MongoDB Atlas kümesine bağlanır.
- * Ortam değişkenlerini .env veya Render gibi yerlerden alır.
- */
-const initMongoConnection = async () => {
-  if (!MONGODB_USER || !MONGODB_PASSWORD || !MONGODB_URL || !MONGODB_DB) {
-    throw new Error('Missing MongoDB environment variables (MONGODB_*)');
+  if (!MONGODB_URI) {
+    throw new Error('Missing MongoDB URI in environment variables');
   }
 
-  const uri = `mongodb+srv://${encodeURIComponent(
-    MONGODB_USER
-  )}:${encodeURIComponent(MONGODB_PASSWORD)}@${MONGODB_URL}/${MONGODB_DB}?retryWrites=true&w=majority`;
-
-  try {
-    await mongoose.connect(uri, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true
-    });
-    // Başarılı bağlantı
-    // eslint-disable-next-line no-console
-    console.log('Mongo connection successfully established!');
-  } catch (error) {
-    // eslint-disable-next-line no-console
-    console.error('Mongo connection error:', error);
-    throw error;
-  }
-};
-
-module.exports = initMongoConnection;
+  await mongoose.connect(MONGODB_URI);
+  console.log('Mongo connection successfully established!');
+}

@@ -2,26 +2,28 @@ import express from 'express';
 import cors from 'cors';
 import pino from 'pino';
 import pinoHttp from 'pino-http';
+import cookieParser from 'cookie-parser';
 
 import contactsRouter from './routes/contactsRoutes.js';
-import errorHandler from './middlewares/errorHandler.js';
-import notFoundHandler from './middlewares/notFoundHandler.js';
+import authRouter from './routes/auth.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
 export default function setupServer() {
   const app = express();
 
-  // Middleware
   app.use(cors());
   app.use(express.json());
+  app.use(cookieParser()); // cookie parsing
   app.use(pinoHttp({ logger }));
 
-  // Routes
-  app.use('/contacts', contactsRouter);
+  // auth routes (no auth required)
+  app.use('/auth', authRouter);
 
-  // Unknown route -> 404 JSON
-  app.use((req, res) => res.status(404).json({ message: 'Not found' }));
+  // contacts routes (authenticate inside router)
+  app.use('/contacts', contactsRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);
@@ -29,6 +31,7 @@ export default function setupServer() {
   const PORT = process.env.PORT || 3000;
   app.listen(PORT, () => {
     logger.info(`Server is running on port ${PORT}`);
+    // eslint-disable-next-line no-console
     console.log(`Server is running on port ${PORT}`);
   });
 

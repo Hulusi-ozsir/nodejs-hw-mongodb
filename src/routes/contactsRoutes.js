@@ -1,10 +1,26 @@
-import { Router } from 'express';
-import { ctrlWrapper } from '../utils/ctrlWrapper.js';
-import * as contactsController from '../controllers/contactsController.js';
+import express from 'express';
+import ctrlWrapper from '../utils/ctrlWrapper.js';
+import authenticate from '../middlewares/authenticate.js';
+import {
+  getContacts,
+  getContactById,
+  createContact,
+  patchContact,
+  deleteContact
+} from '../controllers/contactsController.js';
+import validateBody from '../middlewares/validateBody.js';
+import { createContactSchema, updateContactSchema } from '../schemas/contactsSchemas.js';
+import isValidId from '../middlewares/isValidId.js';
 
-const router = Router();
+const router = express.Router();
 
-router.get('/', ctrlWrapper(contactsController.getAllContacts));
-router.post('/', ctrlWrapper(contactsController.addContact));
+// tüm contacts rotaları authentication gerektirir
+router.use(authenticate);
+
+router.get('/', ctrlWrapper(getContacts));
+router.get('/:contactId', isValidId, ctrlWrapper(getContactById));
+router.post('/', validateBody(createContactSchema), ctrlWrapper(createContact));
+router.patch('/:contactId', isValidId, validateBody(updateContactSchema), ctrlWrapper(patchContact));
+router.delete('/:contactId', isValidId, ctrlWrapper(deleteContact));
 
 export default router;
