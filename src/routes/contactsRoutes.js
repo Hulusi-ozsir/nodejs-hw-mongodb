@@ -7,7 +7,7 @@ import {
   createContact,
   patchContact,
   deleteContact
-} from '../controllers/contacts.js';
+} from '../controllers/contactsController.js';
 import validateBody from '../middlewares/validateBody.js';
 import { createContactSchema, updateContactSchema } from '../schemas/contactsSchemas.js';
 import isValidId from '../middlewares/isValidId.js';

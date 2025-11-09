@@ -1,4 +1,4 @@
-import Contact from '../models/Contact.js'; // bulunduğu konuma göre path'ı kontrol edin
+import Contact from '../db/models/Contact.js'; // bulunduğu konuma göre path'ı kontrol edin
 
 export const getAllContacts = async ({ page = 1, perPage = 10, sortBy = 'name', sortOrder = 'asc', filters = {}, userId }) => {
   const skip = (Number(page) - 1) * Number(perPage);

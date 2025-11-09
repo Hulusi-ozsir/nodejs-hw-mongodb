@@ -4,10 +4,10 @@ import pino from 'pino';
 import pinoHttp from 'pino-http';
 import cookieParser from 'cookie-parser';
 
-import contactsRouter from './routers/contacts.js';
-import authRouter from './routers/auth.js';
-import notFoundHandler from './middlewares/notFoundHandler.js';
-import errorHandler from './middlewares/errorHandler.js';
+import contactsRouter from './routes/contactsRoutes.js';
+import authRouter from './routes/auth.js';
+import { notFoundHandler } from './middlewares/notFoundHandler.js';
+import { errorHandler } from './middlewares/errorHandler.js';
 
 const logger = pino({ level: process.env.LOG_LEVEL || 'info' });
 
