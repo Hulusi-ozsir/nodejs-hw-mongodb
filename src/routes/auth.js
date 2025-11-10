@@ -1,11 +1,30 @@
 import express from 'express';
-import { validateBody } from '../middlewares/validateBody.js';
-import { sendResetEmailController, resetPasswordController } from '../controllers/authController.js';
-import { sendResetEmailSchema, resetPasswordSchema } from '../schemas/authSchemas.js';
+import asyncHandler from 'express-async-handler';
+import {
+  sendResetEmailController,
+  resetPasswordController,
+} from '../controllers/authController.js';
 
 const router = express.Router();
 
-router.post('/send-reset-email', validateBody(sendResetEmailSchema), sendResetEmailController);
-router.post('/reset-pwd', validateBody(resetPasswordSchema), resetPasswordController);
+/**
+ * @route   POST /auth/send-reset-email
+ * @desc    Şifre sıfırlama bağlantısını e-posta olarak gönderir
+ * @access  Public
+ */
+router.post(
+  '/send-reset-email',
+  asyncHandler(sendResetEmailController)
+);
 
-export default router;  // <-- default export eklendi
+/**
+ * @route   POST /auth/reset-pwd
+ * @desc    Token doğrulaması yaparak şifreyi sıfırlar
+ * @access  Public
+ */
+router.post(
+  '/reset-pwd',
+  asyncHandler(resetPasswordController)
+);
+
+export default router;
